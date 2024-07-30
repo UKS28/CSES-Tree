@@ -1,0 +1,62 @@
+#include <bits/stdc++.h>
+using namespace std;
+#define ll long long
+#define rep(i, st, ed) for (int i = st; i < ed; i++)
+
+// SUBPROBLEM:
+// -- take a particular node or not take that means there will be 2 state for each node
+// -- i.e. if we select a edge then either to take that node or not take
+// --1. final answer for each node will be max (take, not take) 
+//      i.e ans= max(dp[node][0],dp[node][1])
+// --2. dp[node][0] =ans(child1)+ans(child2)+...ans(childn)
+// --3. suppose we are taking ith child connect to this node the
+//        curr(i)= ans(child1)+ans(child2)+...+ans(child(i-1)) +
+//                       dp[childi][0]
+//                 +ans(child(i+1)) +ans(child (i+2))+ ans of child(n)
+//           or
+//        curr(i)= dp[node][0]- ans(childi) + dp[childi[0]]
+// --4. dp[node][1]= max(curr(i),dp[node][1]);
+// -- NOTE- its tree like structure that why we are not using visited array 
+//          we are using parent to identify whether it is visited or not
+
+void dfs(int curr, int par, vector<int> adjlist[], vector<vector<int>> &dp)
+{
+   
+    for (auto x : adjlist[curr])
+    {
+        if (x != par)
+        {   
+            dfs(x, curr, adjlist, dp);
+            dp[curr][0] += max(dp[x][0], dp[x][1]);
+        }
+    }
+    for (auto x : adjlist[curr])
+    {
+        if (x != par)
+        {
+            dp[curr][1] = max(
+                dp[curr][1],
+                (1 + (dp[curr][0] - max(dp[x][0], dp[x][1])) + dp[x][0]));
+        }
+    }
+}
+
+int main()
+{
+    int n;
+    cin >> n;
+    vector<int> adjlist[n];
+    for (int i = 0; i < n - 1; i++)
+    {
+        int u, v;
+        cin >> u >> v;
+        u--;
+        v--;
+        adjlist[u].push_back(v);
+        adjlist[v].push_back(u);
+    }
+    vector<vector<int>> dp(n, vector<int>(2, 0));
+    dfs(0, 0, adjlist, dp);
+    cout << max(dp[0][0], dp[0][1]) << endl;
+    return 0;
+}
